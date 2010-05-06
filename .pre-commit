@@ -1,0 +1,48 @@
+#!/bin/sh
+
+############################
+## Custom hook:  make sure that there are Perl tests, and that they pass.
+##
+## How to use:  Place this in your project's .git directory, overwriting
+## the sample pre-commit (you may want to back it up first).
+##
+## Dependencies:  bash.  This code uses two improvements bash makes over sh:
+## [[ ]] conditionals and $( ) interpolation.
+############################
+
+complain() {
+    echo $@ > /dev/stderr
+}
+
+test_dir="$(dirname $0)/../../t"
+if [[ ! -d $test_dir ]]; then
+    complain "Test dir $test_dir does not exist (or is not a directory)."
+elif [[ $(echo $test_dir/*.t) == "$test_dir/*.t" ]]; then
+    complain "There are no test (.t) files $test_dir.  Please write some tests!"
+    # ^ This code depends on the fact that a glob pattern that matches no files,
+    # e.g. ../../t/*, will expand to the pattern itself--a literal '../../t/*'.)
+else
+    for test in $test_dir/*.t; do
+        $test
+        if [[ $? != 0 ]]; then
+            echo 'Perl test suite failed'
+            exit 255
+        fi
+    done
+fi
+
+# Copyright (c) Quinn Weaver, 2008
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the same terms as Perl 5.  See http://dev.perl.org/licenses/
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
